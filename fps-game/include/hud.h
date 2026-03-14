@@ -18,6 +18,7 @@ struct HUD {
     void Update(float dt);
     void DrawGameHUD(Player* player, Game* game);
     void DrawMenu(Game* game);
+    void DrawLobby(Game* game);
     void DrawPaused();
     void DrawGameOver(Game* game);
     void DrawWin(Game* game);

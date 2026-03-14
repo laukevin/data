@@ -20,6 +20,7 @@ set(SOURCES
     src/hud.cpp
     src/audio_manager.cpp
     src/renderer.cpp
+    src/network.cpp
 )
 
 # Create executable

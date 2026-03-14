@@ -1,16 +1,17 @@
 #pragma once
 #include "raylib.h"
 #include "raymath.h"
+#include <vector>
 
 struct Level;
 struct Player;
 struct ParticleSystem;
 
 enum class EnemyType {
-    GRUNT,      // Basic enemy, slow, low health
-    SOLDIER,    // Medium, has rifle
-    DEMON,      // Fast melee
-    HEAVY       // Slow, high health, heavy damage
+    ZOMBIE_WALKER,   // Slow shambler
+    ZOMBIE_RUNNER,   // Fast zombie
+    ZOMBIE_BRUTE,    // Big tanky zombie
+    ZOMBIE_SPITTER   // Ranged acid zombie
 };
 
 enum class EnemyState {
@@ -29,7 +30,7 @@ struct Enemy {
     float radius = 0.4f;
     float height = 1.8f;
 
-    EnemyType type = EnemyType::GRUNT;
+    EnemyType type = EnemyType::ZOMBIE_WALKER;
     EnemyState state = EnemyState::IDLE;
 
     int health = 50;
@@ -53,18 +54,26 @@ struct Enemy {
     Color bodyColor = RED;
     Color eyeColor = YELLOW;
 
+    // Co-op: track which player to target
+    int targetPlayer = 0;  // 0 = local, 1 = remote
+
     void Init(EnemyType t, Vector3 pos);
-    void Update(float dt, Player* player, Level* level, ParticleSystem* particles);
+    void Update(float dt, Player* player, Level* level, ParticleSystem* particles,
+                Vector3* remotePlayerPos = nullptr, bool remoteAlive = false);
     void TakeDamage(int amount, Vector3 hitDir, ParticleSystem* particles);
     void Draw();
     bool IsAlive() const { return health > 0; }
     bool CanSeePlayer(Player* player, Level* level) const;
+    bool CanSeePoint(Vector3 target, Level* level) const;
+
+    // Get the closest player position (for co-op)
+    Vector3 GetClosestTarget(Player* player, Vector3* remotePos, bool remoteAlive) const;
 
 private:
-    void UpdateIdle(float dt, Player* player, Level* level);
-    void UpdatePatrol(float dt, Player* player, Level* level);
-    void UpdateChase(float dt, Player* player, Level* level);
-    void UpdateAttack(float dt, Player* player, ParticleSystem* particles);
+    void UpdateIdle(float dt, Player* player, Level* level, Vector3* remotePos, bool remoteAlive);
+    void UpdatePatrol(float dt, Player* player, Level* level, Vector3* remotePos, bool remoteAlive);
+    void UpdateChase(float dt, Player* player, Level* level, Vector3* remotePos, bool remoteAlive);
+    void UpdateAttack(float dt, Player* player, ParticleSystem* particles, Vector3* remotePos, bool remoteAlive);
     void PickPatrolTarget(Level* level);
     void MoveToward(Vector3 target, float dt, Level* level);
 };

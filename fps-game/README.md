@@ -1,24 +1,46 @@
-# DARK ARENA - 3D First-Person Shooter
+# DARK ARENA - Co-Op Zombie Survival FPS
 
-A complete 3D first-person shooter written in C++ using the **raylib** open-source game engine.
+A 3D first-person shooter with **online 2-player co-op** written in C++ using the **raylib** open-source game engine. Team up with a friend and survive 10 waves of zombies!
+
+## Game Modes
+
+- **Solo Survival** - Fight through 10 waves of zombies alone
+- **Co-Op (Host)** - Host a game on your LAN/IP for a friend to join
+- **Co-Op (Join)** - Connect to a friend's game by IP address
 
 ## Features
 
-- **Procedurally generated levels** - Each of the 5 levels features randomly generated rooms, corridors, and pillars with unique visual themes (Stone Dungeon, Tech Base, Hell, Dark Fortress)
-- **3 Weapons** - Pistol, Shotgun, and Assault Rifle with unique fire rates, spread, and damage
-- **4 Enemy types** - Grunt, Soldier, Demon (fast melee), and Heavy with AI (patrol, chase, attack states)
+- **Online 2-player co-op** - TCP networking with player sync, shared enemies, and cooperative gameplay
+- **Wave-based zombie survival** - 10 increasingly difficult waves with scaling enemy counts
+- **4 Zombie types**:
+  - **Walker** - Slow shamblers, low damage
+  - **Runner** - Fast and aggressive, attacks in packs
+  - **Brute** - Massive HP tank, hits hard
+  - **Spitter** - Ranged acid attacks from distance
+- **3 Weapons** - Pistol, Shotgun, and Assault Rifle
+- **Procedurally generated levels** - Random rooms, corridors, and pillars with 4 visual themes
 - **Full FPS controls** - WASD movement, mouse look, sprint, crouch, jump
-- **Procedural textures** - Brick walls, tiled floors, panel ceilings, all generated at runtime
-- **Particle system** - Blood, sparks, muzzle flashes, explosions, pickup effects
-- **Procedural sound effects** - All audio synthesized at runtime (no asset files needed)
-- **HUD** - Health/armor bars, ammo display, weapon slots, crosshair, hit markers, minimap
-- **Pickups** - Health, armor, ammo, and weapon pickups scattered throughout levels
-- **Screen effects** - Damage vignette, low health warning, head bob, weapon sway
+- **Co-op HUD** - Partner health bar, kill counters, ping display, partner on minimap
+- **Particle system** - Blood, sparks, muzzle flashes, pickup effects
+- **Procedural textures and audio** - Zero external assets needed
+
+## How Co-Op Works
+
+1. **Player 1**: Select "HOST GAME" from the menu
+2. **Player 2**: Select "JOIN GAME" and enter Player 1's IP address
+3. Once connected, Player 1 presses ENTER to start
+4. Both players spawn in the same procedurally generated level
+5. Zombies target the closest player - work together to survive!
+6. Game ends when both players die, or you survive all 10 waves
+
+The host is authoritative for enemy AI and game state. Both players can shoot enemies independently with hit detection synced over the network.
 
 ## Controls
 
 | Key | Action |
 |-----|--------|
+| W/S or UP/DOWN | Menu navigation |
+| ENTER | Confirm / Start |
 | WASD | Move |
 | Mouse | Look |
 | Left Click | Shoot |
@@ -27,7 +49,7 @@ A complete 3D first-person shooter written in C++ using the **raylib** open-sour
 | C / Ctrl | Toggle crouch |
 | 1, 2, 3 | Switch weapons |
 | Scroll Wheel | Cycle weapons |
-| ESC | Pause |
+| ESC | Pause / Back |
 
 ## Building
 
@@ -36,6 +58,7 @@ A complete 3D first-person shooter written in C++ using the **raylib** open-sour
 - CMake 3.14+
 - C++17 compiler (GCC, Clang, MSVC)
 - raylib 5.0+ (installed system-wide or via CMake)
+- POSIX sockets (Linux/macOS - networking uses TCP sockets)
 
 ### Linux
 
@@ -65,34 +88,33 @@ cmake .. && make -j$(sysctl -n hw.ncpu)
 ./DarkArena
 ```
 
-### Windows (MSVC)
-
-```cmd
-cd fps-game
-mkdir build && cd build
-cmake ..
-cmake --build . --config Release
-Release\DarkArena.exe
-```
-
 ## Architecture
 
 ```
 fps-game/
-├── include/          # Header files
-│   ├── game.h        # Main game state and loop
-│   ├── player.h      # FPS player controller
-│   ├── level.h       # Procedural level generation
-│   ├── enemy.h       # Enemy types and AI
-│   ├── weapon.h      # Weapon system and raycasting
-│   ├── particles.h   # Particle effects
-│   ├── hud.h         # HUD rendering
-│   ├── audio_manager.h  # Procedural audio
-│   └── renderer.h    # Rendering utilities
-├── src/              # Implementation files
-├── CMakeLists.txt    # Build configuration
+├── include/
+│   ├── game.h          # Game state, co-op mode, wave system
+│   ├── player.h        # FPS player controller
+│   ├── level.h         # Procedural level generation
+│   ├── enemy.h         # Zombie types and AI (targets closest player)
+│   ├── weapon.h        # Weapon system and raycasting
+│   ├── particles.h     # Particle effects
+│   ├── hud.h           # HUD, lobby screen, co-op display
+│   ├── network.h       # TCP networking, packet protocol
+│   ├── audio_manager.h # Procedural audio
+│   └── renderer.h      # Rendering utilities
+├── src/                # Implementation files
+├── CMakeLists.txt
 └── README.md
 ```
+
+## Networking
+
+- **Protocol**: TCP with custom binary packet format
+- **Architecture**: Host-authoritative (host runs enemy AI, validates hits)
+- **Sync rate**: 30 Hz player state updates
+- **Packet format**: `[type:1][size:2][data:N]`
+- **Default port**: 7777
 
 ## Engine: raylib
 
